@@ -1,9 +1,10 @@
 package com.cezar.createUrl.engine;
 
+import com.cezar.createUrl.utils.Constants;
 import com.cezar.createUrl.utils.Time;
 
 import javax.swing.JFrame;
-import java.awt.event.KeyEvent;
+import java.awt.*;
 
 public class Window extends JFrame implements Runnable {
 
@@ -13,17 +14,19 @@ public class Window extends JFrame implements Runnable {
     private static Window window = null;
     private static boolean isRunning = true;
     private Scene currentScene = null;
+    private Image doubleBufferImage = null;
+    private Graphics doubleBufferGraphics = null;
 
     public Window() {
         this.mouseListener = new ML();
         this.keyListener = new KL();
 
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        this.setSize(1280, 720);
+        this.setSize(Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
         this.setLocationRelativeTo(null);
         this.setVisible(true);
         this.setResizable(false);
-        this.setTitle("Geometry Dash");
+        this.setTitle(Constants.SCREEN_TITLE);
         this.addMouseListener(this.mouseListener);
         this.addMouseMotionListener(this.mouseListener);
         this.addKeyListener(this.keyListener);
@@ -55,6 +58,23 @@ public class Window extends JFrame implements Runnable {
 
     public void update(double dt) {
         currentScene.update(dt);
+        draw(getGraphics());
+    }
+    public void draw(Graphics g) {
+        if(doubleBufferImage == null) {
+            doubleBufferImage = createImage(getWidth(), getHeight());
+            doubleBufferGraphics = doubleBufferImage.getGraphics();
+        }
+
+        renderOffScreen(doubleBufferGraphics);
+
+        g.drawImage(doubleBufferImage, 0, 0, getWidth(), getHeight(), null);
+
+    }
+
+    public void renderOffScreen(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g;
+        currentScene.draw(g2);
     }
 
     @Override
